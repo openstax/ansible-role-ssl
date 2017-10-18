@@ -1,0 +1,40 @@
+---
+- name: create ssl-certs group
+  become: yes
+  group:
+    name: ssl-cert
+    state: present
+  tags: ssl
+
+- name: ensure www-data user is in ssl-cert
+  become: yes
+  user: 
+    name: www-data
+    groups: www-data,ssl-cert
+  tags:
+    - nginx
+    - ssl
+
+- name: ensure ssl certs dir exists
+  become: yes
+  file:
+    path: /etc/ssl/certs
+    mode: 0755
+    state: directory
+    owner: root
+    group: ssl-cert
+
+- name: ensure ssl private dir exists
+  become: yes
+  file:
+    path: /etc/ssl/private
+    mode: 0710
+    state: directory
+    owner: root
+    group: ssl-cert
+  tags: ssl
+
+- include_tasks: pull_ssl_certs_from_s3.yml
+
+
+

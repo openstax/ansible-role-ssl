@@ -1,0 +1,31 @@
+---
+- name: pip install boto3 and botocore
+  become: yes
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - boto
+    - botocore
+    - boto3
+
+- name: ensure boto3 and botocore is installed
+  become: yes
+  apt:
+    pkg: python-boto
+  with_items:
+    - python-boto
+    - python-botocore
+    - python-boto3
+  tags: ssl
+
+# FIXME: 
+- name: pull certificate from s3
+  become: yes
+  aws_s3:
+    mode: get
+    bucket: "{{ aws.ssl_s3_bucket }}"
+    object: "{{ aws.ssl_s3_cert_object_main }}"
+    dest: "/etc/ssl/certs/{{ aws.ssl_cert_file_name }}_head"
+    aws_access_key: "{{ aws.access_key_id }}"
+    aws_secret_key: "{{ aws.secret_access_key }}"
+  tags: ssl
