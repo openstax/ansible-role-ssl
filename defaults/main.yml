@@ -1,2 +1,8 @@
 ---
-# defaults file for ssl
+openstax_ssl_role: 
+  s3_bucket: 
+  s3_cert_object_main: 
+  s3_cert_object_bundle:
+  s3_key_object: 
+  s3_key_name:
+  ssl_cert_file_name:
