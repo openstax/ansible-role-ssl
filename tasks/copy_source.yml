@@ -1,0 +1,16 @@
+---
+- name: copy openstax certificate bundle and set permissions
+  copy:
+    src: "{{ ssl_src_cert_path }}"
+    dest: "{{ ssl_dest_cert_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: 0644
+
+- name: copy private SSL key and set permissions
+  copy:
+    src: "{{ ssl_src_key_path }}"
+    dest: "{{ ssl_dest_encrypted_key_path if ssl_key_password else ssl_dest_key_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: 0640
