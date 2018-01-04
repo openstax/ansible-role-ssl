@@ -1,25 +1,23 @@
 ---
-# FIXME: 
-- name: pull certificate from s3
+- name: get openstax SSL certificate from s3
   become: yes
   aws_s3:
     mode: get
-    bucket: "{{ openstax_ssl_role.s3_bucket }}"
-    object: "{{ openstax_ssl_role.s3_cert_object_main }}"
-    dest: "/etc/ssl/certs/{{ openstax_ssl_role.ssl_cert_file_name }}_head"
-    aws_access_key: "{{ openstax_ssl_role.s3_access_key_id }}"
-    aws_secret_key: "{{ openstax_ssl_role.s3_secret_access_key }}"
-  tags: ssl
+    bucket: "{{ ssl_s3_bucket }}"
+    object: "{{ ssl_s3_primary_cert }}"
+    dest: "{{ ssl_dest_primary_cert_path"
+    aws_access_key: "{{ aws_access_key_id }}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
 
-- name: pull certificate bundle from s3
+- name: get intermediate SSL certificate bundle from s3
   become: yes
   aws_s3:
     mode: get
-    bucket: "{{ openstax_ssl_role.s3_bucket }}"
-    object: "{{ openstax_ssl_role.s3_cert_object_main }}"
-    dest: "/etc/ssl/certs/{{ openstax_ssl_role.ssl_cert_file_name }}_inter"
-    aws_access_key: "{{ openstax_ssl_role.s3_access_key_id }}"
-    aws_secret_key: "{{ openstax_ssl_role.s3_secret_access_key }}"
+    bucket: "{{ ssl_s3_bucket }}"
+    object: "{{ ssl_s3_intermediate_cert }}"
+    dest: "{{ ssl_dest_intermediate_cert_path }}"
+    aws_access_key: "{{ aws_access_key_id}}"
+    aws_secret_key: "{{ aws_secret_access_key }}"
   
 - name: concatenate the certs
   become: yes
