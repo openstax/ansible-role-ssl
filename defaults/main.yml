@@ -1,8 +1,26 @@
 ---
-openstax_ssl_role: 
-  s3_bucket: 
-  s3_cert_object_main: 
-  s3_cert_object_bundle:
-  s3_key_object: 
-  s3_key_name:
-  ssl_cert_file_name:
+ssl_cert_file_name: openstax
+ssl_key_file_name: openstax
+ssl_dest_cert_dir: /etc/ssl/certs
+ssl_dest_key_dir: /etc/ssl/private
+ssl_enable: True
+ssl_group: ssl-cert
+ssl_key_password: ~
+ssl_user: root
+
+ssl_dest_primary_cert_path: "{{ ssl_dest_cert_dir }}/{{ ssl_cert_file_name }}_prim.crt"
+ssl_dest_intermediate_cert_path: "{{ ssl_dest_cert_dir }}/{{ ssl_cert_file_name }}_inter.crt"
+ssl_dest_cert_path: "{{ ssl_dest_cert_dir }}/{{ ssl_cert_file_name }}.crt"
+ssl_dest_encrypted_key_path: "{{ ssl_dest_key_dir }}/{{ ssl_key_file_name }}_crypt.pem"
+ssl_dest_key_path: "{{ ssl_dest_key_dir }}/{{ ssl_key_file_name }}.pem"
+ssl_key_password_is_set: "{{ not not ssl_key_password }}"
+ssl_src_cert_exists: "{{ not ssl_stat_src_cert | skipped and ssl_stat_src_cert.stat.exists }}"
+ssl_src_cert_path: "{{ ssl_src_dir }}/certs/{{ ssl_cert_file_name }}.crt"
+ssl_src_key_exists: "{{ not ssl_stat_src_key | skipped and ssl_stat_src_key.stat.exists }}"
+ssl_src_key_path: "{{ ssl_src_dir }}/private/{{ ssl_key_file_name }}.pem"
+
+ssl_copy: >-
+  {{ ssl_stat_src_cert.stat.exists and not ssl_stat_src_key
+  | skipped and ssl_stat_src_key.stat.exists }}
+ssl_get: "{{ not ssl_copy }}"
+ssl_s3: "{{ not ssl_src_cert_exists or not ssl_src_key_exists }}"
