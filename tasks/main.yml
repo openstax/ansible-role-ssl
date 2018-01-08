@@ -1,11 +1,14 @@
 ---
-- debug: 
-    msg: "{{ openstax_ssl_role }}"
+---
+- name: install or upgrade boto3 pip package
+  pip:
+    name: boto3
+    state: latest
+  tags:
+    - boto
+    - config
 
-- include_tasks: create_dirs.yml
-  tags: create-dirs
-- include_tasks: boto.yml
-  tags: boto
-- include_tasks: pull_ssl_certs_from_s3.yml
-  tags: pull-certs
-
+- import_tasks: ssl.yml
+  tags:
+    - ssl
+    - config
