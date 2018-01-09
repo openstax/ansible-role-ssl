@@ -1,5 +1,4 @@
 ---
----
 - name: install or upgrade boto3 pip package
   pip:
     name: boto3

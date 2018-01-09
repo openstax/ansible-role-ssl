@@ -5,9 +5,9 @@
     mode: get
     bucket: "{{ ssl_s3_bucket }}"
     object: "{{ ssl_s3_primary_cert }}"
-    dest: "{{ ssl_dest_primary_cert_path"
-    aws_access_key: "{{ aws_access_key_id }}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    dest: "{{ ssl_dest_primary_cert_path }}"
+    aws_access_key: "{{ ssl_s3_aws_access_key_id }}"
+    aws_secret_key: "{{ ssl_s3_aws_secret_access_key }}"
 
 - name: get intermediate SSL certificate bundle from s3
   become: yes
@@ -16,35 +16,37 @@
     bucket: "{{ ssl_s3_bucket }}"
     object: "{{ ssl_s3_intermediate_cert }}"
     dest: "{{ ssl_dest_intermediate_cert_path }}"
-    aws_access_key: "{{ aws_access_key_id}}"
-    aws_secret_key: "{{ aws_secret_access_key }}"
+    aws_access_key: "{{ ssl_s3_aws_access_key_id }}"
+    aws_secret_key: "{{ ssl_s3_aws_secret_access_key }}"
   
-- name: concatenate the certs
+- name: concatenate openstax SSL certificate with the bundle
   become: yes
-  shell: "cat /etc/ssl/certs/{{ openstax_ssl_role.ssl_cert_file_name }}_head /etc/ssl/certs/{{ openstax_ssl_role.ssl_cert_file_name }}_inter > /etc/ssl/certs/{{ openstax_ssl_role.ssl_cert_file_name }}"
+  shell: >-
+    cat {{ ssl_dest_primary_cert_path }} {{
+    ssl_dest_intermediate_cert_path }} > {{ ssl_dest_cert_path }}
 
-- name: pull key from s3
+- name: get private SSL key from S3
   become: yes
-  aws_s3: 
+  aws_s3:
     mode: get
-    bucket: "{{ openstax_ssl_role.s3_bucket }}"
-    object: "{{ openstax_ssl_role.s3_key_object }}"
-    dest: "/etc/ssl/private/{{ openstax_ssl_role.s3_key_name }}"
-    aws_access_key: "{{ openstax_ssl_role.s3_access_key_id }}"
-    aws_secret_key: "{{ openstax_ssl_role.s3_secret_access_key }}"
+    bucket: "{{ ssl_s3_bucket }}"
+    object: "{{ ssl_s3_private_key }}"
+    dest: "{{ ssl_dest_encrypted_key_path if ssl_key_password else ssl_dest_key_path }}"
+    aws_access_key: "{{ ssl_s3_aws_access_key_id }}"
+    aws_secret_key: "{{ ssl_s3_aws_secret_access_key }}"
 
-- name: set certificate permissions
-  become: yes
-  file: 
-    path: "/etc/ssl/certs/{{ openstax_ssl_role.ssl_cert_file_name }}"
-    mode: 0644
-    group: ssl-cert
-  notify: restart nginx
-
-- name: set key permissions
+- name: set SSL certificate bundle permissions
   become: yes
   file:
-    path: "/etc/ssl/private/{{ openstax_ssl_role.s3_key_name }}"
-    mode: 0640
-    group: ssl-cert
+    path: "{{ ssl_dest_cert_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: 0644
 
+- name: set private SSL key permissions
+  become: yes
+  file:
+    path: "{{ ssl_dest_key_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: 0640
