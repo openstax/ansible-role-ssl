@@ -5,11 +5,12 @@
 
 - name: "ensure www user exists and is in {{ ssl_group }} group"
   user:
-    name: "{{ www_user }}"
+    name: "{{ ssl_www_user }}"
     groups: "{{ ssl_group }}"
     append: True
 
 - name: "ensure {{ ssl_dest_cert_dir }} exists and set permissions"
+  become: yes
   file:
     path: "{{ ssl_dest_cert_dir }}"
     state: directory
@@ -19,6 +20,7 @@
     recurse: True
 
 - name: "ensure {{ ssl_dest_key_dir }} exists and set permissions"
+  become: yes
   file:
     path: "{{ ssl_dest_key_dir }}"
     state: directory
@@ -33,6 +35,7 @@
     module: stat
     path: "{{ ssl_src_cert_path }}"
   register: ssl_stat_src_cert
+  when: ssl_src_dir is defined
 
 - name: check if ssl source key exists
   become: False
