@@ -1,0 +1,58 @@
+---
+- name: ensure ssl group exists
+  group:
+    name: "{{ ssl_group }}"
+
+- name: "ensure www user exists and is in {{ ssl_group }} group"
+  user:
+    name: "{{ ssl_www_user }}"
+    groups: "{{ ssl_group }}"
+    append: True
+
+- name: "ensure {{ ssl_dest_cert_dir }} exists and set permissions"
+  become: yes
+  file:
+    path: "{{ ssl_dest_cert_dir }}"
+    state: directory
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: u=rwX,go=rX
+    recurse: True
+
+- name: "ensure {{ ssl_dest_key_dir }} exists and set permissions"
+  become: yes
+  file:
+    path: "{{ ssl_dest_key_dir }}"
+    state: directory
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: u=rwX,go=X
+    recurse: True
+
+- name: check if ssl source cert exists
+  become: False
+  local_action:
+    module: stat
+    path: "{{ ssl_src_cert_path }}"
+  register: ssl_stat_src_cert
+  when: ssl_src_dir is defined
+
+- name: check if ssl source key exists
+  become: False
+  local_action:
+    module: stat
+    path: "{{ ssl_src_key_path }}"
+  register: ssl_stat_src_key
+  when: ssl_src_cert_exists
+
+- name: include tasks to copy ssl certs and key from source dir
+  include_tasks: copy_source.yml
+  when: not ssl_s3
+
+- name: include tasks to get ssl certs from S3 bucket
+  include_tasks: s3_get.yml
+  when: ssl_s3
+
+- name: include tasks to decrypt private SSL key
+  include_tasks: decrypt_key.yml
+  when: ssl_key_password_is_set

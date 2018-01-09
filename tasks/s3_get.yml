@@ -1,0 +1,52 @@
+---
+- name: get openstax SSL certificate from s3
+  become: yes
+  aws_s3:
+    mode: get
+    bucket: "{{ ssl_s3_bucket }}"
+    object: "{{ ssl_s3_primary_cert }}"
+    dest: "{{ ssl_dest_primary_cert_path }}"
+    aws_access_key: "{{ ssl_s3_aws_access_key_id }}"
+    aws_secret_key: "{{ ssl_s3_aws_secret_access_key }}"
+
+- name: get intermediate SSL certificate bundle from s3
+  become: yes
+  aws_s3:
+    mode: get
+    bucket: "{{ ssl_s3_bucket }}"
+    object: "{{ ssl_s3_intermediate_cert }}"
+    dest: "{{ ssl_dest_intermediate_cert_path }}"
+    aws_access_key: "{{ ssl_s3_aws_access_key_id }}"
+    aws_secret_key: "{{ ssl_s3_aws_secret_access_key }}"
+  
+- name: concatenate openstax SSL certificate with the bundle
+  become: yes
+  shell: >-
+    cat {{ ssl_dest_primary_cert_path }} {{
+    ssl_dest_intermediate_cert_path }} > {{ ssl_dest_cert_path }}
+
+- name: get private SSL key from S3
+  become: yes
+  aws_s3:
+    mode: get
+    bucket: "{{ ssl_s3_bucket }}"
+    object: "{{ ssl_s3_private_key }}"
+    dest: "{{ ssl_dest_encrypted_key_path if ssl_key_password else ssl_dest_key_path }}"
+    aws_access_key: "{{ ssl_s3_aws_access_key_id }}"
+    aws_secret_key: "{{ ssl_s3_aws_secret_access_key }}"
+
+- name: set SSL certificate bundle permissions
+  become: yes
+  file:
+    path: "{{ ssl_dest_cert_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: 0644
+
+- name: set private SSL key permissions
+  become: yes
+  file:
+    path: "{{ ssl_dest_key_path }}"
+    owner: "{{ ssl_user }}"
+    group: "{{ ssl_group }}"
+    mode: 0640
