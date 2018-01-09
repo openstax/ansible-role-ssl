@@ -1,12 +1,6 @@
 ansible-role-ssl
 =========
 
-This role is a dependency for [ansible_role_nginx](https://github.com/openstax/ansible-role-nginx) and allows the use of copying certs from a s3 bucket and hopefully in the future from a local directory.  
-
-Currently (Oct 18, 2017), the way ssl certs are copied is from the deployment server. This doesn't allow us to use travis in order to conduct tests on the role. The downloading from an s3 bucket is problematic b/c then we need to install specific packages in order to manipulate the s3 bucket. This is not ideal either.
-
-This role needs to be refactored to allow either of the methods mentioned above and possibly a 3rd method to replace them. If we copy the servers locally first and then use the copy method we can avoid the first two problems.
-
 Requirements
 ------------
 
